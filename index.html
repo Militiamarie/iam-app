@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0710" />
+  <title>I AM — House</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <style>
+    :root { --void:#0a0710; --panel:#14101c; --line:#3a2d4a; --ivory:#f4ead8; --gold:#d4af37; --magenta:#c43b7a; --muted:#b7a8c4; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    html,body { background:var(--void); color:var(--ivory); font-family:Inter,system-ui,sans-serif; min-height:100%; }
+    body { max-width:480px; margin:0 auto; padding:16px 16px 88px; }
+    h1,h2,.wordmark { font-family:Cinzel,serif; }
+    header { text-align:center; padding:12px 0 18px; }
+    .wordmark { font-size:28px; letter-spacing:.28em; color:var(--gold); }
+    .tag { color:var(--muted); font-size:12px; margin-top:6px; }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:16px; margin-bottom:12px; }
+    label { display:block; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+    input { width:100%; background:#0c0a12; border:1px solid var(--line); color:var(--ivory); border-radius:12px; padding:12px; font-size:16px; }
+    button { border:0; cursor:pointer; font-weight:700; border-radius:12px; padding:12px 14px; font-size:14px; }
+    .btn-gold { background:var(--gold); color:#1a1204; width:100%; }
+    .btn-mag { background:var(--magenta); color:white; width:100%; }
+    .btn-ghost { background:transparent; color:var(--ivory); border:1px solid var(--line); width:100%; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .hidden { display:none !important; }
+    .screen { display:none; } .screen.on { display:block; }
+    nav { position:fixed; left:50%; bottom:12px; transform:translateX(-50%); width:min(448px,calc(100% - 24px)); display:grid; grid-template-columns:repeat(4,1fr); gap:6px; background:#120e18; border:1px solid var(--line); border-radius:16px; padding:8px; }
+    nav button { background:transparent; color:var(--muted); font-size:11px; padding:10px 4px; }
+    nav button.active { color:var(--gold); }
+    #reader { width:100%; border-radius:14px; overflow:hidden; background:#000; }
+    #reader video { width:100% !important; }
+    .pill { display:inline-block; font-size:11px; padding:3px 8px; border-radius:999px; border:1px solid var(--line); color:var(--gold); }
+    .result { word-break:break-all; font-size:13px; color:var(--muted); background:#0c0a12; padding:10px; border-radius:10px; margin:10px 0; }
+    #receive-qr,#receive-barcode { display:grid; place-items:center; padding:12px; background:white; border-radius:14px; }
+    #receive-barcode { margin-top:10px; }
+    .notice { font-size:12px; color:var(--muted); line-height:1.45; margin-top:10px; }
+    .history-item { padding:10px 0; border-bottom:1px solid var(--line); font-size:13px; }
+    .hero { text-align:center; padding:8px 0 4px; }
+    .hero p { color:var(--muted); font-size:13px; margin-top:8px; line-height:1.5; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wordmark">I AM</div>
+    <div class="tag">music · nft · house · scan</div>
+  </header>
+  <section id="house" class="screen on">
+    <div class="card hero">
+      <h2 style="color:var(--gold);font-size:20px;">The House</h2>
+      <p>Scan a ticket, merch code, Cash App QR, or NFT claim link. Payments still confirm in Cash App. Tokens still open on the marketplace.</p>
+    </div>
+    <div class="card">
+      <label>Quick actions</label>
+      <div class="grid2">
+        <button class="btn-gold" onclick="show('scan')">Open scanner</button>
+        <button class="btn-ghost" onclick="show('pay')">Cash App pay</button>
+      </div>
+      <button class="btn-mag" style="margin-top:10px" onclick="show('nft')">NFT / claim</button>
+    </div>
+    <div class="card">
+      <label>House rules</label>
+      <p class="notice">I AM does not hold your Cash App login, seed phrase, or bank. A scan routes you to the official app to finish.</p>
+    </div>
+  </section>
+  <section id="scan" class="screen">
+    <div class="card">
+      <div class="grid2">
+        <button class="btn-gold" id="startScan">Start scanner</button>
+        <button class="btn-ghost" id="stopScan">Stop</button>
+      </div>
+      <div id="reader" style="margin-top:12px"></div>
+      <p class="notice">QR + UPC / EAN-13 / Code 128 / Code 39. Hold still over the bars.</p>
+    </div>
+    <div class="card hidden" id="resultCard">
+      <span class="pill" id="resultType">result</span>
+      <h2 id="resultTitle" style="margin:10px 0 4px;font-size:18px;color:var(--gold)"></h2>
+      <div class="result" id="resultUrl"></div>
+      <div class="grid2">
+        <button class="btn-gold" id="openResult">Open in I AM</button>
+        <button class="btn-ghost" id="copyResult">Copy</button>
+      </div>
+    </div>
+    <div class="card">
+      <label>Paste instead</label>
+      <input id="manual" placeholder="URL, $cashtag, or barcode digits" />
+      <button class="btn-ghost" id="parseManual" style="margin-top:10px">Read</button>
+    </div>
+    <div class="card">
+      <label>Recent in this house</label>
+      <div id="history">Nothing scanned yet.</div>
+    </div>
+  </section>
+  <section id="pay" class="screen">
+    <div class="card">
+      <label>Your Cash App $cashtag</label>
+      <input id="cashtag" placeholder="$yourcashtag" autocomplete="off" />
+      <div style="margin-top:10px"><input id="amount" type="number" min="1" step="1" placeholder="Optional amount USD" /></div>
+      <div class="grid2" style="margin-top:10px">
+        <button class="btn-gold" id="showReceive">I AM QR</button>
+        <button class="btn-ghost" id="showBarcode">Barcode</button>
+      </div>
+      <button class="btn-mag" id="openMyCash" style="margin-top:10px">Open Cash App</button>
+      <div id="receiveBox" class="hidden" style="margin-top:14px">
+        <div id="receive-qr"></div>
+        <div id="receive-barcode" class="hidden"><svg id="barcodeSvg"></svg></div>
+        <p class="notice" id="receiveNote"></p>
+      </div>
+    </div>
+  </section>
+  <section id="nft" class="screen">
+    <div class="card">
+      <label>NFT / claim link</label>
+      <input id="nftLink" placeholder="OpenSea, Etherscan, contract 0x…" />
+      <button class="btn-gold" id="openNft" style="margin-top:10px">Open marketplace</button>
+      <p class="notice">Scan tab also drops NFT links here when you scan a claim QR.</p>
+    </div>
+    <div class="card">
+      <label>Last NFT scan</label>
+      <div id="lastNft" class="notice">None yet.</div>
+    </div>
+  </section>
+  <nav>
+    <button class="active" data-tab="house" onclick="show('house')">House</button>
+    <button data-tab="scan" onclick="show('scan')">Scan</button>
+    <button data-tab="pay" onclick="show('pay')">Pay</button>
+    <button data-tab="nft" onclick="show('nft')">NFT</button>
+  </nav>
+  <script>
+    const KEY_TAG='iam_cashtag', KEY_HIST='iam_scan_history', KEY_NFT='iam_last_nft';
+    function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));}
+    const cashtagEl=document.getElementById('cashtag');
+    const amountEl=document.getElementById('amount');
+    const receiveBox=document.getElementById('receiveBox');
+    const receiveNote=document.getElementById('receiveNote');
+    const historyEl=document.getElementById('history');
+    const resultCard=document.getElementById('resultCard');
+    const receiveQr=document.getElementById('receive-qr');
+    const receiveBarcode=document.getElementById('receive-barcode');
+    cashtagEl.value=localStorage.getItem(KEY_TAG)||'';
+    const lastNft=localStorage.getItem(KEY_NFT); if(lastNft) document.getElementById('lastNft').textContent=lastNft;
+    let html5QrCode=null,lastRead=null;
+    const FORMATS=[Html5QrcodeSupportedFormats.QR_CODE,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.CODE_39,Html5QrcodeSupportedFormats.ITF,Html5QrcodeSupportedFormats.CODABAR];
+    function normalizeCashtag(raw){return (raw||'').trim().replace(/^\$+/,'').replace(/\s+/g,'');}
+    function cashUrl(tag,amount){const t=normalizeCashtag(tag);if(!t)return null;return amount?'https://cash.app/$'+t+'/'+encodeURIComponent(amount):'https://cash.app/$'+t;}
+    function looksLikeBarcode(text){const t=(text||'').trim();return /^\d{6,14}$/.test(t)||(/^[A-Z0-9\-\.\/\+\$\%\s]{4,48}$/i.test(t)&&!/^https?:/i.test(t)&&t.indexOf('.')===-1);}
+    function classify(text){const t=(text||'').trim(),lower=t.toLowerCase();
+      if(/cash\.app\//i.test(lower)||/^\$[a-z0-9_]+$/i.test(t)) return {kind:'pay',title:'Cash App in I AM',url:t.startsWith('$')?cashUrl(t):t};
+      if(/opensea\.io|magiceden\.io|blur\.io|rarible\.com|etherscan\.io|polygonscan\.com|solscan\.io|zora\.co|foundation\.app|nft|0x[a-f0-9]{40}/i.test(lower)){let url=t;if(/^0x[a-f0-9]{40}$/i.test(t)) url='https://etherscan.io/address/'+t;return {kind:'nft',title:'NFT claim / token',url};}
+      if(/^https?:\/\//i.test(t)) return {kind:'link',title:'Web link',url:t};
+      if(looksLikeBarcode(t)) return {kind:'barcode',title:'Barcode',url:/^\d{8,14}$/.test(t)?'https://www.google.com/search?q='+encodeURIComponent(t+' barcode'):t};
+      return {kind:'text',title:'Scanned text',url:t};
+    }
+    function routeIntoApp(info,raw){if(info.kind==='pay'){const m=String(info.url||raw).match(/cash\.app\/\$?([A-Za-z0-9_]+)/i);if(m)cashtagEl.value=m[1];show('pay');}else if(info.kind==='nft'){document.getElementById('nftLink').value=info.url;localStorage.setItem(KEY_NFT,info.url);document.getElementById('lastNft').textContent=info.url;show('nft');}}
+    function showResult(raw){const info=classify(raw);resultCard.classList.remove('hidden');
+      document.getElementById('resultType').textContent=info.kind.toUpperCase();
+      document.getElementById('resultTitle').textContent=info.title;
+      document.getElementById('resultUrl').textContent=raw;
+      document.getElementById('openResult').onclick=function(){routeIntoApp(info,raw);if(info.url&&/^https?:\/\//i.test(info.url)) window.open(info.url,'_blank');};
+      document.getElementById('copyResult').onclick=async function(){await navigator.clipboard.writeText(raw);document.getElementById('copyResult').textContent='Copied';setTimeout(()=>document.getElementById('copyResult').textContent='Copy',1200);};
+      const list=JSON.parse(localStorage.getItem(KEY_HIST)||'[]');list.unshift({kind:info.kind,title:info.title,raw});localStorage.setItem(KEY_HIST,JSON.stringify(list.slice(0,12)));renderHistory();routeIntoApp(info,raw);}
+    function renderHistory(){const list=JSON.parse(localStorage.getItem(KEY_HIST)||'[]');if(!list.length){historyEl.textContent='Nothing scanned yet.';return;}historyEl.innerHTML=list.map(item=>'<div class="history-item"><b style="color:var(--gold)">'+item.kind+'</b> · '+item.title+'<div class="notice">'+item.raw+'</div></div>').join('');}
+    function requireTag(){const tag=normalizeCashtag(cashtagEl.value);if(!tag){alert('Enter your $cashtag first.');return null;}localStorage.setItem(KEY_TAG,tag);return tag;}
+    document.getElementById('showReceive').onclick=function(){const tag=requireTag();if(!tag)return;const url=cashUrl(tag,amountEl.value);receiveBox.classList.remove('hidden');receiveQr.classList.remove('hidden');receiveBarcode.classList.add('hidden');receiveQr.innerHTML='';new QRCode(receiveQr,{text:url,width:180,height:180});receiveNote.textContent='I AM pay QR → Cash App $'+tag;};
+    document.getElementById('showBarcode').onclick=function(){const tag=requireTag();if(!tag)return;receiveBox.classList.remove('hidden');receiveQr.classList.add('hidden');receiveBarcode.classList.remove('hidden');JsBarcode('#barcodeSvg',amountEl.value?tag+'/'+amountEl.value:tag,{format:'CODE128',displayValue:true,height:70,margin:8});receiveNote.textContent='Code 128 of your cashtag. Cash App still prefers the QR.';};
+    document.getElementById('openMyCash').onclick=function(){const tag=requireTag();if(!tag)return;window.open(cashUrl(tag,amountEl.value),'_blank');};
+    document.getElementById('parseManual').onclick=function(){const v=document.getElementById('manual').value.trim();if(v)showResult(v);};
+    document.getElementById('openNft').onclick=function(){const v=document.getElementById('nftLink').value.trim();if(!v)return;const info=classify(v);window.open(info.url&&/^https?:/.test(info.url)?info.url:v,'_blank');};
+    async function startScan(){show('scan');if(!html5QrCode)html5QrCode=new Html5Qrcode('reader');try{await html5QrCode.start({facingMode:'environment'},{fps:10,qrbox:{width:280,height:140},formatsToSupport:FORMATS},function(decoded){if(decoded&&decoded!==lastRead){lastRead=decoded;showResult(decoded);}});}catch(err){alert('Allow camera to scan.\n\n'+err);}}
+    async function stopScan(){if(html5QrCode){try{await html5QrCode.stop();}catch(e){}}}
+    document.getElementById('startScan').onclick=startScan;
+    document.getElementById('stopScan').onclick=stopScan;
+    renderHistory();
+  </script>
+</body>
+</html>
